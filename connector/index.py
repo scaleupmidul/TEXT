@@ -5,7 +5,11 @@ from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime, timezone
 
-# Optional MT5 import on Windows
+def get_app_url():
+    url = os.environ.get("APP_URL", "").strip()
+    if not url and os.environ.get("VERCEL_URL"):
+        url = f"https://{os.environ.get('VERCEL_URL')}"
+    return url
 MT5_AVAILABLE = False
 try:
     import MetaTrader5 as mt5
@@ -81,7 +85,7 @@ class handler(BaseHTTPRequestHandler):
         path = parsed.path.rstrip('/')
         query = parse_qs(parsed.query)
 
-        app_url = os.environ.get("APP_URL", "")
+        app_url = get_app_url()
 
         if path in ["", "/status", "/health"]:
             response_data = {
@@ -136,8 +140,8 @@ class handler(BaseHTTPRequestHandler):
             if "terminal" in payload:
                 LATEST_DATA["terminal"] = payload["terminal"]
 
-            # If APP_URL is injected via Vercel service binding, forward push to web app
-            app_url = os.environ.get("APP_URL", "")
+            # If APP_URL is injected or VERCEL_URL is available, forward push to web app
+            app_url = get_app_url()
             forwarded = False
             if app_url:
                 try:
@@ -179,7 +183,7 @@ class handler(BaseHTTPRequestHandler):
 def app(environ, start_response):
     path = environ.get('PATH_INFO', '/')
     method = environ.get('REQUEST_METHOD', 'GET')
-    app_url = os.environ.get("APP_URL", "")
+    app_url = get_app_url()
 
     if method == 'OPTIONS':
         start_response('200 OK', [
