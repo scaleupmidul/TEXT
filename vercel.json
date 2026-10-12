@@ -16,15 +16,7 @@
     "connector": {
       "root": "connector",
       "runtime": "python",
-      "entrypoint": "index.py",
-      "bindings": [
-        {
-          "type": "service",
-          "service": "app",
-          "format": "url",
-          "env": "APP_URL"
-        }
-      ]
+      "entrypoint": "index.py"
     }
   },
   "rewrites": [
